@@ -1,15 +1,15 @@
-STATUS:VOLATILE - NOT TO BE USED
+This library is meant to be wrapper around a JDBC driver so that all executed queries can be recorded to different
+locations like a file,console or any other remote server via plugins. The plugins must be registered  at startup time.
 
-NOTE: This is a highly volatile codebase as I am trying to get a prototype up and running. Once that is done, will do some changes 
-and add more tests around it.
+Current features include:
+1. Capture all queries sent to the db server through the JDBC driver
+2. Configure different types of listeners(which listen to events) to record to different locations - Currently,
+   console and file are supported
+3. Filter the queries that are being logged. Ability to configure filters at startup and use predefined or custom filters.
+   Currently, there are 3 types of filter :ExactMatchSql, AllowAllSql, DenyAllSql
 
+This has been tested with jdk 1.6.20 only.
 
-This library is meant to be wrapper around a jdbc library so that all executed queries can be recorded to a file,console or any other remote server
-via plugins. The plugins can be registered  at startup time. 
+Any new features/bug fix request,please create a new issue on github.
 
-Another purpose is to get the list of queries during a unit/integration test so that we can actually verify the count/actual queries.
-
-This project was born because there is no active library which logs queries that are executed. Developers don't get an idea 
-of the queries involved in a particular feature(more so if a ORM is used) until it is dropped in production and we are left 
-with identifying what feature is executing this query. 
-
+Detailed documentation on github wiki: https://github.com/gokulesh/SqlRecorder/wiki/Configuration-and-Usage

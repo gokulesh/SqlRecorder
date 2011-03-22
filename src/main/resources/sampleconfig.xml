@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <bean id="sqlRecorder" class="org.sqlrecorder.SqlRecorder">
+        <constructor-arg value="org.hsqldb.jdbc.JDBCDriver"/>
+        <!--<constructor-arg value="net.sourceforge.jtds.jdbc.Driver"/>        -->
+        <constructor-arg>
+            <util:list>
+                <bean id="consoleLogger" class="org.sqlrecorder.events.listener.ConsoleOutputListener"></bean>
+                <bean id="fileLogger" class="org.sqlrecorder.events.listener.FileOutputListener">
+                    <constructor-arg value="/tmp/query.log"/>
+                    <constructor-arg ref="filterSql"/>                    
+                </bean>
+            </util:list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="filterSql" class="org.sqlrecorder.events.filter.ExactSqlMatchFilter">
+        <constructor-arg value="SELECT 1"/>
+    </bean>
+</beans>

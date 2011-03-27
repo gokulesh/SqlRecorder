@@ -42,7 +42,6 @@ public final class SqlRecorder implements Driver {
             throw new SQLRecorderException("Cannot load empty config file");
         }
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configFileLocation);
-        ctx.getBean(SqlRecorder.class);
     }
 
     public SqlRecorder(String driverClass, List<StatementListener> listenerList) {

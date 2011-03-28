@@ -38,7 +38,7 @@ public final class ConsoleOutputListener extends BaseStatementListener {
         if (StringUtils.isNotBlank(requestId)) {
             requestId += ":";
         }
-        System.out.print(requestId + sql + "\n");
+        System.out.print("["+ requestId +"]" + sql + "\n");
         System.out.flush();
     }
 

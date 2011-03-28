@@ -44,7 +44,6 @@ public final class SqlRecorder implements Driver {
         String configFileLocation = System.getProperty("sqlrecorder.config.location");
         if (StringUtils.isNotBlank(configFileLocation)) {
             new ClassPathXmlApplicationContext(configFileLocation);
-//            throw new SQLRecorderException("Cannot load empty config file");
         }
     }
  

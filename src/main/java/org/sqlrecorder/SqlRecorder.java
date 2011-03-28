@@ -1,7 +1,11 @@
 package org.sqlrecorder;
 
 import java.lang.reflect.Proxy;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -38,12 +42,12 @@ public final class SqlRecorder implements Driver {
 
     private static void init() throws SQLException {
         String configFileLocation = System.getProperty("sqlrecorder.config.location");
-        if (StringUtils.isBlank(configFileLocation)) {
-            throw new SQLRecorderException("Cannot load empty config file");
+        if (StringUtils.isNotBlank(configFileLocation)) {
+            new ClassPathXmlApplicationContext(configFileLocation);
+//            throw new SQLRecorderException("Cannot load empty config file");
         }
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configFileLocation);
     }
-
+ 
     public SqlRecorder(String driverClass, List<StatementListener> listenerList) {
         Preconditions.checkArgument(StringUtils.isNotEmpty(driverClass), "driver class cannot be empty");
         Preconditions.checkArgument(!CollectionUtils.isEmpty(listenerList), "Must register at least 1 listener");
@@ -117,6 +121,11 @@ public final class SqlRecorder implements Driver {
                 }
                 DriverManager.deregisterDriver(driver);
                 unregisteredDrivers.add(driver);//Keep track of unreg drivers
+            }
+
+            //This case would occur if the driver has been deregistered and not registered again till this point. 
+            if(this.driver == null){
+                this.driver = (Driver)Class.forName(driverClass).newInstance();
             }
             DriverManager.registerDriver(this);
 

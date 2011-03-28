@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="AllTests">
+    <test name="AllUnitTests">
+        <packages>
+            <package name="org.sqlrecorder.events"/>
+        </packages>
+    </test>
+
+    <test name="AllIntegrationTests" preserve-order="true">
+        <classes>
+            <class name="org.sqlrecorder.integration.SqlRecorderIntegrationTest"/>
+            <class name="org.sqlrecorder.integration.SqlRecorderIntegrationAsSpringBeanTest"/>
+        </classes>
+    </test>
+</suite>

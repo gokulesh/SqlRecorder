@@ -1,4 +1,4 @@
-package org.sqlrecorder;
+package org.sqlrecorder.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,6 +18,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import com.google.common.io.Files;
+import org.sqlrecorder.util.TestUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -37,7 +38,7 @@ public class SqlRecorderIntegrationTest {
 
     @BeforeClass
     public void setUp() throws SQLException, ClassNotFoundException {
-
+        TestUtils.deRegisterAllDrivers();
         System.setProperty("sqlrecorder.config.location", "classpath:sampleconfig.xml");
         Class.forName("org.sqlrecorder.SqlRecorder");
 
@@ -54,11 +55,13 @@ public class SqlRecorderIntegrationTest {
     }
 
     @AfterClass
-    public void deleteFile() {
+    public void deleteFile() throws SQLException {
         File f = new File("/tmp/query.log");
         if (f.exists()) {
             f.delete();
         }
+        connection = DriverManager.getConnection(jdbcUrl, username, password);
+        connection.createStatement().execute("SHUTDOWN");
     }
 
     @BeforeMethod

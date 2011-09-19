@@ -1,0 +1,11 @@
+.classpath
+.settings/
+.project
+.DS_Store
+target/
+otherdirectoryvalue/
+
+# META-INF - eclipse adds it in random places, so we exclude those (should be in src/main/resources/META-INF/
+*/src/main/java/META-INF/
+*/src/test/java/META-INF/
+*.log*

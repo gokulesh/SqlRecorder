@@ -1,6 +1,7 @@
 package org.sqlrecorder.proxyhandler;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -46,7 +47,7 @@ public final class PreparedStatementHandler implements InvocationHandler {
         }
     }
 
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException {
 
         String methodName = method.getName();
         LOG.debug(String.format("Executed method in PreparedStatementHandler : %s", methodName));
@@ -58,7 +59,15 @@ public final class PreparedStatementHandler implements InvocationHandler {
         ifExecuteBatch(methodName);
         ifClearBatch(methodName);
 
-        return method.invoke(preparedStatement, args);
+        try {
+			return method.invoke(preparedStatement, args);
+		} catch (IllegalArgumentException e) {
+			throw new SQLException(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw new SQLException(e.getCause());
+		} catch (InvocationTargetException e) {
+			throw new SQLException(e.getCause());
+		}
     }
 
     private void ifAnyOfSetMethods(Method method, Object[] args) {

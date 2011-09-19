@@ -3,14 +3,16 @@ package org.sqlrecorder.proxyhandler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.sqlrecorder.events.ActiveListenersManager;
 import org.sqlrecorder.events.event.ExecuteEvent;
 import org.sqlrecorder.util.LogUtils;
+
+import com.google.common.collect.Lists;
 
 public final class StatementHandler implements InvocationHandler {
     private static final Logger LOG = LogUtils.loggerForThisClass();
@@ -25,7 +27,7 @@ public final class StatementHandler implements InvocationHandler {
         this.activeListenersManager = activeListenersManager;
     }
 
-    public Object invoke(Object proxy, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException {
         String methodName = method.getName();
 
         LOG.debug(String.format("Executed method : %s", methodName));
@@ -35,8 +37,17 @@ public final class StatementHandler implements InvocationHandler {
         ifBatchQueriesExecute(methodName);
         ifClearBatch(methodName);
         ifCloseStatement(methodName);
-
-        return method.invoke(statement, args);
+       
+        try {
+			return method.invoke(statement, args);
+		} catch (IllegalArgumentException e) {
+			throw new SQLException(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw new SQLException(e.getCause());
+		} catch (InvocationTargetException e) {
+			throw new SQLException(e.getCause());
+		}
+     
     }
 
     private void ifSingleQueryExecute(String methodName, Object[] args) {

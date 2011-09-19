@@ -17,13 +17,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import com.google.common.io.Files;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.sqlrecorder.util.TestUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.google.common.io.Files;
 
 //TODO : Refactor the code to validate lines in the log files. It  uses the same code in all the tests. 
 
@@ -39,8 +41,9 @@ public class SqlRecorderIntegrationTest {
     @BeforeClass
     public void setUp() throws SQLException, ClassNotFoundException {
         TestUtils.deRegisterAllDrivers();
-        System.setProperty("sqlrecorder.config.location", "classpath:sampleconfig.xml");
-        Class.forName("org.sqlrecorder.SqlRecorder");
+        //System.setProperty("sqlrecorder.config.location", "classpath:sampleconfig.xml");
+        //Class.forName("org.sqlrecorder.SqlRecorder");
+        ClassPathXmlApplicationContext c = new ClassPathXmlApplicationContext("sampleconfig.xml");
 
         connection = DriverManager.getConnection(jdbcUrl, username, password);
         Statement s = connection.createStatement();
@@ -203,7 +206,12 @@ public class SqlRecorderIntegrationTest {
         String firstQuery = linesAfterExecution.get(zeroIndex);
         assertThat(firstQuery, containsString(expectedQuery));
     }
-
+    
+    @Test(expectedExceptions = SQLException.class)
+    public void runSQLWithErrors() throws SQLException {
+    	 Statement s = connection.createStatement();
+    	 s.execute("asdasdas");
+    }
     @AfterMethod
     public void tearDown() throws SQLException {
         connection.close();

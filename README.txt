@@ -1,3 +1,6 @@
+NOTE: This software is released under the Eclipse Public License(EPL v1.0)
+
+
 This library is a wrapper around a JDBC driver so that all executed queries can be recorded to different
 locations like a file,console or any other remote server via plugins. The plugins must be registered  at startup time.
 

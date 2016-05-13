@@ -1,11 +1,13 @@
 package org.sqlrecorder.proxyhandler;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.slf4j.Logger;
@@ -24,8 +26,17 @@ public final class ConnectionHandler implements InvocationHandler {
         this.activeListenersManager = activeListenersManager;
     }
 
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Object o = method.invoke(connection, args);
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException {
+        Object o;
+		try {
+			o = method.invoke(connection, args);
+		} catch (IllegalArgumentException e) {
+			throw new SQLException(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw new SQLException(e.getCause());
+		} catch (InvocationTargetException e) {
+			throw new SQLException(e.getCause());
+		}
         String methodName = method.getName();
 
         LOG.debug(String.format("Executed method in ConnectionHandler : %s",methodName));

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,13 +18,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import com.google.common.io.Files;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.sqlrecorder.util.TestUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.google.common.io.Files;
 
 //TODO : Refactor the code to validate lines in the log files. It  uses the same code in all the tests. 
 
@@ -39,13 +42,14 @@ public class SqlRecorderIntegrationTest {
     @BeforeClass
     public void setUp() throws SQLException, ClassNotFoundException {
         TestUtils.deRegisterAllDrivers();
-        System.setProperty("sqlrecorder.config.location", "classpath:sampleconfig.xml");
-        Class.forName("org.sqlrecorder.SqlRecorder");
+        //System.setProperty("sqlrecorder.config.location", "classpath:sampleconfig.xml");
+        //Class.forName("org.sqlrecorder.SqlRecorder");
+        ClassPathXmlApplicationContext c = new ClassPathXmlApplicationContext("sampleconfig.xml");
 
         connection = DriverManager.getConnection(jdbcUrl, username, password);
         Statement s = connection.createStatement();
-        s.executeUpdate("create table sqlrecuser(name varchar(20),age int,postcode smallint)");
-        s.execute("insert into sqlrecuser values('gokul',20,3000) ");
+        s.executeUpdate("create table sqlrecuser(name varchar(20),age int,postcode smallint, created_date date)");
+        s.execute("insert into sqlrecuser values('gokul',20,3000, null) ");
         connection.commit();
         s.execute("CREATE PROCEDURE sp1() LANGUAGE JAVA NO SQL EXTERNAL NAME 'CLASSPATH:org.sqlrecorder.storedprocedure.HsqlDbStoredProcedure.spWithoutParams'");
         s.execute("CREATE PROCEDURE sp2(IN name varchar(20),IN age int, IN createDate double) LANGUAGE JAVA NO SQL EXTERNAL NAME 'CLASSPATH:org.sqlrecorder.storedprocedure.HsqlDbStoredProcedure.spWithParams'");
@@ -137,15 +141,17 @@ public class SqlRecorderIntegrationTest {
     public void validateBatchPreparedStatement() throws SQLException {
         List<String> linesBeforeExecution = returnLinesFromFile();
 
-        PreparedStatement pstmt = connection.prepareStatement("insert into sqlrecuser (name, age,postcode) values (?,?,?)");
+        PreparedStatement pstmt = connection.prepareStatement("insert into sqlrecuser (name, age,postcode, created_date) values (?,?,?,?)");
         pstmt.setString(1, "gokul");
         pstmt.setInt(2, 50);
         pstmt.setInt(3, 3000);
+        pstmt.setDate(4, new Date((new java.util.Date(11, 2, 1)).getTime()));
         pstmt.addBatch();
         pstmt.addBatch();
 
         pstmt.setInt(2, 40);
         pstmt.setInt(3, 2000);
+        pstmt.setTimestamp(4, new java.sql.Timestamp((new java.util.Date(11, 2, 1)).getTime()));
         pstmt.addBatch();
 
         pstmt.executeBatch();
@@ -155,8 +161,8 @@ public class SqlRecorderIntegrationTest {
         assertThat(lineCount, equalTo(3));
 
         int zeroIndex = linesBeforeExecution.size();
-        String query1 = "insert into sqlrecuser (name, age,postcode) values ('gokul',50,3000)";
-        String query2 = "insert into sqlrecuser (name, age,postcode) values ('gokul',40,2000)";
+        String query1 = "insert into sqlrecuser (name, age,postcode, created_date) values ('gokul',50,3000,'1911-03-01')";
+        String query2 = "insert into sqlrecuser (name, age,postcode, created_date) values ('gokul',40,2000,'1911-03-01 00:00:00.0')";
 
         String firstQuery = linesAfterExecution.get(zeroIndex);
         String secondQuery = linesAfterExecution.get(zeroIndex + 1);
@@ -203,7 +209,12 @@ public class SqlRecorderIntegrationTest {
         String firstQuery = linesAfterExecution.get(zeroIndex);
         assertThat(firstQuery, containsString(expectedQuery));
     }
-
+    
+    @Test(expectedExceptions = SQLException.class)
+    public void runSQLWithErrors() throws SQLException {
+    	 Statement s = connection.createStatement();
+    	 s.execute("asdasdas");
+    }
     @AfterMethod
     public void tearDown() throws SQLException {
         connection.close();

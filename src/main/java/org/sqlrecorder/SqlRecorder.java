@@ -10,18 +10,18 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.sqlrecorder.config.RuntimeResultConfiguration;
 import org.sqlrecorder.events.ActiveListenersManager;
 import org.sqlrecorder.events.listener.StatementListener;
 import org.sqlrecorder.exception.SQLRecorderException;
 import org.sqlrecorder.proxyhandler.ConnectionHandler;
 import org.sqlrecorder.util.LogUtils;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 public final class SqlRecorder implements Driver {
 
@@ -31,21 +31,6 @@ public final class SqlRecorder implements Driver {
     private final String driverClass;
     private Driver driver;
 
-    //TODO the driver implementation should be moved to another class to test effectively
-    static {
-        try {
-            init();
-        } catch (SQLException e) {
-            throw new SQLRecorderException("Unable to register SqlRecorder driver", e);
-        }
-    }
-
-    private static void init() throws SQLException {
-        String configFileLocation = System.getProperty("sqlrecorder.config.location");
-        if (StringUtils.isNotBlank(configFileLocation)) {
-            new ClassPathXmlApplicationContext(configFileLocation);
-        }
-    }
  
     public SqlRecorder(String driverClass, List<StatementListener> listenerList) {
         Preconditions.checkArgument(StringUtils.isNotEmpty(driverClass), "driver class cannot be empty");

@@ -3,10 +3,11 @@ package org.sqlrecorder.events.event;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 public final class ExecuteEvent {
 
@@ -52,6 +53,10 @@ public final class ExecuteEvent {
             String paramValue = context.getValue();
             if (context.getType().equals(String.class)) {
                 paramValue = "'" + paramValue + "'";
+            } else if (context.getType().equals(java.sql.Date.class) || context.getType().equals(java.sql.Timestamp.class)) {
+                paramValue = "'" + paramValue + "'";
+            }else {
+            	
             }
             sb = sb.replace(questionMarkPosition, questionMarkPosition + 1, paramValue);
             currentPosition = questionMarkPosition + paramValue.length();
